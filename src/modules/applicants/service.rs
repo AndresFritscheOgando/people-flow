@@ -1,0 +1,114 @@
+use crate::modules::applicants::dto::{ApplicantResponse, CreateApplicantDto, UpdateApplicantDto};
+use crate::modules::applicants::entity::Model;
+use crate::{
+    errors::{AppError, AppResult},
+    modules::applicants,
+};
+use sea_orm::ActiveValue::Set;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
+use uuid::Uuid;
+
+pub struct ApplicantService {
+    db: DatabaseConnection,
+}
+
+impl ApplicantService {
+    pub fn new(db: DatabaseConnection) -> Self {
+        Self { db }
+    }
+
+    pub async fn get_all(db: &DatabaseConnection) -> AppResult<Vec<Model>> {
+        let applicants = applicants::entity::Entity::find()
+            .all(db)
+            .await
+            .map_err(|_| AppError::NotFound)?;
+
+        Ok(applicants)
+    }
+    pub async fn create_async(
+        db: &DatabaseConnection,
+        dto: CreateApplicantDto,
+    ) -> AppResult<ApplicantResponse> {
+        let applicant = applicants::entity::ActiveModel {
+            first_name: Set(dto.first_name),
+            last_name: Set(dto.last_name),
+            email: Set(dto.email),
+            phone_number: Set(dto.phone_number),
+            status: Set(dto.status),
+            applied_at: Set(dto.applied_at),
+            date_of_birth: Set(dto.date_of_birth),
+
+            // auto-generated/default DB fields
+            ..Default::default()
+        };
+
+        let created = applicant.update(db).await?;
+
+        Ok(ApplicantResponse {
+            first_name: created.first_name,
+            last_name: created.last_name,
+            email: created.email,
+            phone_number: created.phone_number,
+            status: created.status,
+            applied_at: created.applied_at,
+            date_of_birth: created.date_of_birth,
+            created_at: created.created_at,
+            updated_at: created.updated_at,
+        })
+    }
+
+    pub async fn update_async(
+        db: &DatabaseConnection,
+        id: Uuid,
+        dto: UpdateApplicantDto,
+    ) -> AppResult<ApplicantResponse> {
+        let applicant = applicants::entity::Entity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or(AppError::NotFound)?;
+
+        let mut applicant: applicants::entity::ActiveModel = applicant.into();
+
+        if let Some(first_name) = dto.first_name {
+            applicant.first_name = Set(first_name);
+        }
+
+        if let Some(last_name) = dto.last_name {
+            applicant.last_name = Set(last_name);
+        }
+
+        if let Some(email) = dto.email {
+            applicant.email = Set(email);
+        }
+
+        if let Some(phone_number) = dto.phone_number {
+            applicant.phone_number = Set(Some(phone_number));
+        }
+
+        if let Some(status) = dto.status {
+            applicant.status = Set(status);
+        }
+
+        if let Some(applied_at) = dto.applied_at {
+            applicant.applied_at = Set(applied_at);
+        }
+
+        if let Some(date_of_birth) = dto.date_of_birth {
+            applicant.date_of_birth = Set(Some(date_of_birth));
+        }
+
+        let updated = applicant.update(db).await?;
+
+        Ok(ApplicantResponse {
+            first_name: updated.first_name,
+            last_name: updated.last_name,
+            email: updated.email,
+            phone_number: updated.phone_number,
+            status: updated.status,
+            applied_at: updated.applied_at,
+            date_of_birth: updated.date_of_birth,
+            created_at: updated.created_at,
+            updated_at: updated.updated_at,
+        })
+    }
+}
