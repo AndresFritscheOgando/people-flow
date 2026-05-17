@@ -1,11 +1,10 @@
 use crate::modules::applicants::dto::{ApplicantResponse, CreateApplicantDto, UpdateApplicantDto};
-use crate::modules::applicants::entity::Model;
 use crate::{
     errors::{AppError, AppResult},
     modules::applicants,
 };
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
+use sea_orm::{entity, ActiveModelTrait, DatabaseConnection, EntityTrait};
 use uuid::Uuid;
 
 pub struct ApplicantService {
@@ -17,13 +16,23 @@ impl ApplicantService {
         Self { db }
     }
 
-    pub async fn get_all(db: &DatabaseConnection) -> AppResult<Vec<Model>> {
-        let applicants = applicants::entity::Entity::find()
-            .all(db)
-            .await
-            .map_err(|_| AppError::NotFound)?;
+    pub async fn get_all_async(db: &DatabaseConnection) -> AppResult<Vec<ApplicantResponse>> {
+        let applicants = applicants::entity::Entity::find().all(db).await?;
 
-        Ok(applicants)
+        Ok(applicants
+            .into_iter()
+            .map(|a| ApplicantResponse {
+                first_name: a.first_name,
+                last_name: a.last_name,
+                email: a.email,
+                phone_number: a.phone_number,
+                status: a.status,
+                applied_at: a.applied_at,
+                date_of_birth: a.date_of_birth,
+                created_at: a.created_at,
+                updated_at: a.updated_at,
+            })
+            .collect())
     }
     pub async fn create_async(
         db: &DatabaseConnection,
@@ -42,7 +51,7 @@ impl ApplicantService {
             ..Default::default()
         };
 
-        let created = applicant.update(db).await?;
+        let created = applicant.insert(db).await?;
 
         Ok(ApplicantResponse {
             first_name: created.first_name,
@@ -110,5 +119,16 @@ impl ApplicantService {
             created_at: updated.created_at,
             updated_at: updated.updated_at,
         })
+    }
+    pub async fn delete_async(db: &DatabaseConnection, id: Uuid) -> AppResult<()> {
+        let applicant = applicants::entity::Entity::find_by_id(id)
+            .one(db)
+            .await?
+            .ok_or(AppError::NotFound)?;
+
+        let active: applicants::entity::ActiveModel = applicant.into();
+        active.delete(db).await?;
+
+        Ok(())
     }
 }
