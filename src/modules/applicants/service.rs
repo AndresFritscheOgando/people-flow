@@ -3,8 +3,9 @@ use crate::{
     errors::{AppError, AppResult},
     modules::applicants,
 };
+use applicants::entity::Entity as ApplicantEntity;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{entity, ActiveModelTrait, DatabaseConnection, EntityTrait};
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
 use uuid::Uuid;
 
 pub struct ApplicantService {
@@ -17,7 +18,7 @@ impl ApplicantService {
     }
 
     pub async fn get_all_async(db: &DatabaseConnection) -> AppResult<Vec<ApplicantResponse>> {
-        let applicants = applicants::entity::Entity::find().all(db).await?;
+        let applicants = ApplicantEntity::find().all(db).await?;
 
         Ok(applicants
             .into_iter()
