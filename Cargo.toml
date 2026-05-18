@@ -11,6 +11,10 @@ edition = "2021"
 name = "people-flow"
 path = "src/main.rs"
 
+[[bin]]
+name = "seed"
+path = "src/bin/seed.rs"
+
 [dependencies]
 # Web
 axum = { version = "0.7", features = ["macros"] }
