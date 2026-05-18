@@ -1,6 +1,7 @@
 use crate::modules::private::applicants::dto::{
-    ApplicantResponse, CreateApplicantDto, UpdateApplicantDto,
+    ApplicantResponse, CreateApplicantDto, FilterApplicantDto, UpdateApplicantDto
 };
+use crate::modules::private::applicants::entity::Column;
 use crate::{
     errors::{AppError, AppResult},
     modules::private::applicants,
@@ -8,7 +9,7 @@ use crate::{
 use applicants::entity::Entity as ApplicantEntity;
 use chrono::Utc;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
+use sea_orm::{ActiveModelTrait, ColumnTrait, Condition, DatabaseConnection, EntityTrait, QueryFilter};
 use uuid::Uuid;
 
 pub struct ApplicantService {
@@ -20,8 +21,23 @@ impl ApplicantService {
         Self { db }
     }
 
-    pub async fn get_all_async(db: &DatabaseConnection) -> AppResult<Vec<ApplicantResponse>> {
-        let applicants = ApplicantEntity::find().all(db).await?;
+    pub async fn get_all_async(
+        db: &DatabaseConnection,
+        filter: FilterApplicantDto
+    ) -> AppResult<Vec<ApplicantResponse>> {
+    let mut condition = Condition::all();
+
+    if let Some(status) = filter.status {
+        condition = condition.add(Column::Status.eq(status));
+    }
+    if let Some(first_name) = filter.first_name {
+        condition = condition.add(Column::FirstName.contains(&first_name));
+    }
+    if let Some(last_name) = filter.last_name {
+        condition = condition.add(Column::LastName.contains(&last_name));
+    }
+
+        let applicants = ApplicantEntity::find().filter(condition).all(db).await?;
 
         Ok(applicants
             .into_iter()

@@ -1,13 +1,13 @@
 use crate::{
     errors::{AppError, AppResult},
     modules::private::applicants::{
-        dto::{ApplicantResponse, CreateApplicantDto, UpdateApplicantDto},
+        dto::{ApplicantResponse, CreateApplicantDto, FilterApplicantDto, UpdateApplicantDto},
         service::ApplicantService,
     },
     state::AppState,
 };
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     routing::{get, put},
     Json, Router,
@@ -21,8 +21,11 @@ pub fn router() -> Router<AppState> {
         .route("/:id", put(update).delete(delete_async))
 }
 
-pub async fn get_all(State(state): State<AppState>) -> AppResult<Json<Vec<ApplicantResponse>>> {
-    let applicants = ApplicantService::get_all_async(&state.db).await?;
+pub async fn get_all(
+    State(state): State<AppState>,
+    Query(filter): Query<FilterApplicantDto>,
+) -> AppResult<Json<Vec<ApplicantResponse>>> {
+    let applicants = ApplicantService::get_all_async(&state.db, filter).await?;
 
     Ok(Json(applicants))
 }

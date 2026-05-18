@@ -4,8 +4,9 @@ use axum::{
     Json,
 };
 use serde_json::json;
+use thiserror::Error;
 
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum AppError {
     #[error("unauthorized")]
     Unauthorized,

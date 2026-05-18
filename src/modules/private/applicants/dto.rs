@@ -47,3 +47,10 @@ pub struct UpdateApplicantDto {
     pub applied_at: Option<DateTimeUtc>,
     pub date_of_birth: Option<NaiveDate>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct FilterApplicantDto {
+    pub status: Option<String>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+}
