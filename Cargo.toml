@@ -52,6 +52,7 @@ rand = "0.8"
 # Types
 uuid = { version = "1", features = ["v4", "serde"] }
 chrono = { version = "0.4", features = ["serde"] }
+axum-valid = "0.24.0"
 
 [profile.release]
 opt-level = 3

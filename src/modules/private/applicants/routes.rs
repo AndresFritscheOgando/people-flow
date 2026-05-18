@@ -1,6 +1,6 @@
 use crate::{
-    errors::{AppResult},
-    modules::applicants::{
+    errors::{AppError, AppResult},
+    modules::private::applicants::{
         dto::{ApplicantResponse, CreateApplicantDto, UpdateApplicantDto},
         service::ApplicantService,
     },
@@ -13,6 +13,7 @@ use axum::{
     Json, Router,
 };
 use uuid::Uuid;
+use validator::Validate;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -30,6 +31,8 @@ pub async fn create_async(
     State(state): State<AppState>,
     Json(dto): Json<CreateApplicantDto>,
 ) -> AppResult<Json<ApplicantResponse>> {
+    dto.validate()
+        .map_err(|e| AppError::Validation(e.to_string()))?;
     let applicant = ApplicantService::create_async(&state.db, dto).await?;
 
     Ok(Json(applicant))
@@ -40,6 +43,8 @@ pub async fn update(
     Path(id): Path<Uuid>,
     Json(dto): Json<UpdateApplicantDto>,
 ) -> AppResult<Json<ApplicantResponse>> {
+    dto.validate()
+        .map_err(|e| AppError::Validation(e.to_string()))?;
     let applicant = ApplicantService::update_async(&state.db, id, dto).await?;
 
     Ok(Json(applicant))
@@ -47,7 +52,7 @@ pub async fn update(
 
 pub async fn delete_async(
     State(state): State<AppState>,
-    Path(id): Path<Uuid>
+    Path(id): Path<Uuid>,
 ) -> AppResult<StatusCode> {
     ApplicantService::delete_async(&state.db, id).await?;
 

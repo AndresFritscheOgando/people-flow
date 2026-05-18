@@ -1,3 +1,2 @@
-pub mod applicants;
-pub mod auth;
-pub mod users;
+pub mod private;
+pub mod public;

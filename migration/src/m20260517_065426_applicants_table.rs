@@ -9,18 +9,18 @@ impl MigrationTrait for Migration {
         manager
             .create_table(
                 Table::create()
-                    .table(Applicant::Table)
+                    .table(Applicants::Table)
                     .if_not_exists()
-                    .col(pk_uuid(Applicant::Id))
-                    .col(string(Applicant::FirstName))
-                    .col(string(Applicant::LastName))
-                    .col(string_uniq(Applicant::Email))
-                    .col(string_null(Applicant::PhoneNumber))
-                    .col(string(Applicant::Status))
-                    .col(timestamp_with_time_zone(Applicant::AppliedAt))
-                    .col(date_null(Applicant::DateOfBirth))
-                    .col(timestamp_with_time_zone(Applicant::CreatedAt))
-                    .col(timestamp_with_time_zone(Applicant::UpdatedAt))
+                    .col(pk_uuid(Applicants::Id))
+                    .col(string(Applicants::FirstName))
+                    .col(string(Applicants::LastName))
+                    .col(string_uniq(Applicants::Email))
+                    .col(string_null(Applicants::PhoneNumber))
+                    .col(string(Applicants::Status))
+                    .col(timestamp_with_time_zone(Applicants::AppliedAt))
+                    .col(date_null(Applicants::DateOfBirth))
+                    .col(timestamp_with_time_zone(Applicants::CreatedAt))
+                    .col(timestamp_with_time_zone(Applicants::UpdatedAt))
                     .to_owned(),
             )
             .await
@@ -28,13 +28,13 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         manager
-            .drop_table(Table::drop().table(Applicant::Table).to_owned())
+            .drop_table(Table::drop().table(Applicants::Table).to_owned())
             .await
     }
 }
 
 #[derive(DeriveIden)]
-enum Applicant {
+enum Applicants {
     Table,
     Id,
     FirstName,

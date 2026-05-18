@@ -15,7 +15,7 @@ use crate::{
     config::Config,
     errors::{AppError, AppResult},
     middleware::auth::Claims,
-    modules::users::entity::{ActiveModel, Column, Entity, Model},
+    modules::private::users::entity::{ActiveModel, Column, Entity, Model},
 };
 
 use super::dto::{AuthResponse, LoginRequest, RegisterRequest};

@@ -41,7 +41,7 @@ async fn main() -> anyhow::Result<()> {
         .allow_methods(Any)
         .allow_headers(Any);
 
-    let app = router::build()
+    let app = router::build(state.clone())
         .with_state(state)
         .layer(CompressionLayer::new())
         .layer(TraceLayer::new_for_http())

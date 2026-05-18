@@ -1,9 +1,12 @@
-use crate::modules::applicants::dto::{ApplicantResponse, CreateApplicantDto, UpdateApplicantDto};
+use crate::modules::private::applicants::dto::{
+    ApplicantResponse, CreateApplicantDto, UpdateApplicantDto,
+};
 use crate::{
     errors::{AppError, AppResult},
-    modules::applicants,
+    modules::private::applicants,
 };
 use applicants::entity::Entity as ApplicantEntity;
+use chrono::Utc;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait};
 use uuid::Uuid;
@@ -39,7 +42,11 @@ impl ApplicantService {
         db: &DatabaseConnection,
         dto: CreateApplicantDto,
     ) -> AppResult<ApplicantResponse> {
+        let now = Utc::now();
+        let new_id = Uuid::new_v4();
+        tracing::info!("create_async called, generated id={}", new_id);
         let applicant = applicants::entity::ActiveModel {
+            id: Set(new_id),
             first_name: Set(dto.first_name),
             last_name: Set(dto.last_name),
             email: Set(dto.email),
@@ -47,9 +54,8 @@ impl ApplicantService {
             status: Set(dto.status),
             applied_at: Set(dto.applied_at),
             date_of_birth: Set(dto.date_of_birth),
-
-            // auto-generated/default DB fields
-            ..Default::default()
+            created_at: Set(now),
+            updated_at: Set(now),
         };
 
         let created = applicant.insert(db).await?;
@@ -106,6 +112,8 @@ impl ApplicantService {
         if let Some(date_of_birth) = dto.date_of_birth {
             applicant.date_of_birth = Set(Some(date_of_birth));
         }
+
+        applicant.updated_at = Set(Utc::now());
 
         let updated = applicant.update(db).await?;
 

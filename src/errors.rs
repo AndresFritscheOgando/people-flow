@@ -39,17 +39,16 @@ impl IntoResponse for AppError {
             AppError::Validation(msg) => (StatusCode::UNPROCESSABLE_ENTITY, msg.clone()),
             AppError::Internal(e) => {
                 tracing::error!(error = %e, "internal error");
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "internal server error".into(),
-                )
+                (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
             }
             AppError::Database(e) => {
-                tracing::error!(error = %e, "database error");
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "internal server error".into(),
-                )
+                let msg = e.to_string();
+                if msg.contains("duplicate key") {
+                    (StatusCode::CONFLICT, msg)
+                } else {
+                    tracing::error!(error = %e, "database error");
+                    (StatusCode::INTERNAL_SERVER_ERROR, msg)
+                }
             }
         };
 

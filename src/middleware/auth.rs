@@ -1,4 +1,10 @@
-use axum::{async_trait, extract::FromRequestParts, http::request::Parts};
+use axum::{
+    async_trait,
+    extract::{FromRequestParts, Request, State},
+    http::request::Parts,
+    middleware::Next,
+    response::Response,
+};
 use axum_extra::{
     headers::{authorization::Bearer, Authorization},
     TypedHeader,
@@ -38,4 +44,14 @@ impl FromRequestParts<AppState> for Claims {
 
         Ok(token_data.claims)
     }
+}
+
+pub async fn require_auth(
+    State(state): State<AppState>,
+    request: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    let (mut parts, body) = request.into_parts();
+    Claims::from_request_parts(&mut parts, &state).await?;
+    Ok(next.run(Request::from_parts(parts, body)).await)
 }
