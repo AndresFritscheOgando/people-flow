@@ -9,9 +9,16 @@ use crate::{
 use axum::{
     extract::{Path, State},
     http::StatusCode,
-    Json,
+    routing::{get, put},
+    Json, Router,
 };
 use uuid::Uuid;
+
+pub fn router() -> Router<AppState> {
+    Router::new()
+        .route("/", get(get_all).post(create_async))
+        .route("/:id", put(update).delete(delete_async))
+}
 
 pub async fn get_all(State(state): State<AppState>) -> AppResult<Json<Vec<ApplicantResponse>>> {
     let applicants = ApplicantService::get_all_async(&state.db).await?;
@@ -38,7 +45,7 @@ pub async fn update(
     Ok(Json(applicant))
 }
 
-pub async fn delete(
+pub async fn delete_async(
     State(state): State<AppState>,
     Path(id): Path<Uuid>
 ) -> AppResult<StatusCode> {
