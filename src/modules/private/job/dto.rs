@@ -1,12 +1,12 @@
 use sea_orm::entity::prelude::DateTimeUtc;
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use validator::Validate;
 
 use crate::modules::private::enums::project_type::ProjectType;
 
 #[derive(Debug, Serialize)]
 pub struct JobResponse {
-    pub id: String,
     pub title: String,
     pub location: String,
     pub description: String,
