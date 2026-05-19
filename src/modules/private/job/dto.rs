@@ -21,8 +21,6 @@ pub struct JobResponse {
 #[derive(Debug, Deserialize, Validate)]
 pub struct JobCreateDto {
     #[validate(length(min=1,max=100))]
-    pub id: String,
-    #[validate(length(min=1,max=100))]
     pub title: String,
     #[validate(length(min=1,max=50))]
     pub location: String,
@@ -32,6 +30,23 @@ pub struct JobCreateDto {
     pub applicants_counter: u32,
     pub views_counter: u32,
     pub project_type: ProjectType,
-    pub created_at: DateTimeUtc,
-    pub updated_at: DateTimeUtc,
+}
+#[derive(Debug, Deserialize, Validate)]
+pub struct JobUpdateDto {
+    #[validate(length(min=1,max=100))]
+    pub title: Option<String>,
+    #[validate(length(min=1,max=50))]
+    pub location: Option<String>,
+    #[validate(length(min=10,max=10000))]
+    pub description: Option<String>,
+    pub is_active: Option<bool>,
+    pub applicants_counter: Option<u32>,
+    pub views_counter: Option<u32>,
+    pub project_type: Option<ProjectType>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FilterJobDto {
+    pub title: Option<String>,
+    pub location: Option<String>,
 }
